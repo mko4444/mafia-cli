@@ -1,8 +1,7 @@
-// The single Anthropic-coupled module and the mockable seam. Uses adaptive
-// thinking + effort so the bot reasons hard before committing, and
-// output_config.format (json_schema) to get a guaranteed decision shape back.
+// The single Anthropic-coupled module and the mockable seam. The SDK is imported
+// LAZILY (and is an optional dependency) so only a host actually running real bots
+// ever loads it — the join/client path and mock games never need it installed.
 
-import Anthropic from '@anthropic-ai/sdk'
 import type { DecisionFormat } from '~/agents/schema'
 import { EFFORT, MAX_TOKENS } from '~/config'
 
@@ -18,10 +17,12 @@ export interface LlmClient {
 }
 
 export function anthropicClient(model: string): LlmClient {
-  const client = new Anthropic() // reads ANTHROPIC_API_KEY from the environment
+  const load = () => import('@anthropic-ai/sdk').then((m) => new m.default()) // reads ANTHROPIC_API_KEY
+  let client: ReturnType<typeof load> | null = null
   return {
     async complete({ system, user, format }) {
-      const res = await client.messages.create({
+      const sdk = await (client ??= load())
+      const res = await sdk.messages.create({
         model,
         max_tokens: MAX_TOKENS,
         thinking: { type: 'adaptive' }, // the model thinks privately before deciding

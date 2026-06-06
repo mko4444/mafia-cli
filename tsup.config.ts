@@ -11,4 +11,7 @@ export default defineConfig({
   platform: 'node',
   banner: { js: '#!/usr/bin/env node' },
   clean: true,
+  // Optional dep: keep it external and never bundle it, so a build (and the
+  // join/client path) works even when it isn't installed.
+  external: ['@anthropic-ai/sdk'],
 })
