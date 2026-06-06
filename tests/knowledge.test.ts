@@ -69,11 +69,22 @@ describe('information firewall', () => {
     expect(json).not.toContain('mafia')
   })
 
-  it('dead players reveal their role in deadPlayers', () => {
+  it('dead players’ roles stay hidden from the living (closed setup)', () => {
     const s = stateWithRoles(ROLES)
-    s.players[0].alive = false
-    const v = buildKnowledgeView(s, 'p4')
-    expect(v.deadPlayers).toEqual([{ id: 'p0', name: 'P0', revealedRole: 'mafia' }])
+    s.players[0].alive = false // p0 (mafia) dies
+    const v = buildKnowledgeView(s, 'p4') // a living villager
+    expect(v.deadPlayers).toEqual([{ id: 'p0', name: 'P0' }]) // name only, no role
     expect(v.alivePlayers.find((p) => p.id === 'p0')).toBeUndefined()
+    expect(v.spectator).toBeFalsy()
+    expect(v.roles).toBeUndefined()
+    expect(JSON.stringify(v)).not.toContain('mafia') // the dead mafia's role does not leak
+  })
+
+  it('an eliminated player becomes a spectator who sees every role', () => {
+    const s = stateWithRoles(ROLES)
+    s.players[4].alive = false // the villager p4 is out
+    const v = buildKnowledgeView(s, 'p4')
+    expect(v.spectator).toBe(true)
+    expect(v.roles).toMatchObject({ p0: 'mafia', p1: 'mafia', p3: 'cop', p4: 'villager' })
   })
 })

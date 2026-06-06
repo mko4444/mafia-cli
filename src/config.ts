@@ -1,17 +1,17 @@
 // Tunables. The model id is the one place to change which Claude powers the agents.
-export const MODEL = 'claude-opus-4-8'
+export const MODEL = 'claude-sonnet-4-6'
 
 // How hard the bots think. Higher = stronger play, more tokens/latency.
-// 'high' is a strong default on Opus; 'xhigh'/'max' push further at more cost.
-export const EFFORT = 'high' as const
+// 'low'/'medium' keep the game snappy; 'high'/'xhigh'/'max' (Opus) play deeper.
+export const EFFORT = 'medium' as const
 
 // Generous so heavy adaptive-thinking + chatty output never truncates before the
 // JSON decision (truncation → parse failure → fallback). Under the streaming
 // threshold, so a plain request is fine.
 export const MAX_TOKENS = 16000
 
-// Discussion passes per day. 2 = real back-and-forth (bots react to each other).
-export const DAY_ROUNDS = 2
+// Discussion passes per day. 1 keeps the game snappy; 2 = more back-and-forth.
+export const DAY_ROUNDS = 1
 
 // Multiplayer.
 export const DEFAULT_PORT = 8787

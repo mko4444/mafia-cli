@@ -7,7 +7,6 @@
 
 import {
   factionOf,
-  type DeadPlayer,
   type GameState,
   type KnowledgeView,
   type Player,
@@ -17,11 +16,6 @@ import {
 import { publicLog } from '~/core/log'
 
 const pub = (p: Player): PublicPlayer => ({ id: p.id, name: p.name })
-const deadPub = (p: Player): DeadPlayer => ({
-  id: p.id,
-  name: p.name,
-  revealedRole: p.role, // role is public once dead
-})
 
 export function buildKnowledgeView(
   state: GameState,
@@ -35,7 +29,7 @@ export function buildKnowledgeView(
     phase: state.phase,
     round: state.round,
     alivePlayers: state.players.filter((p) => p.alive).map(pub),
-    deadPlayers: state.players.filter((p) => !p.alive).map(deadPub),
+    deadPlayers: state.players.filter((p) => !p.alive).map(pub), // names only — roles hidden until reveal
     publicLog: publicLog(state),
   }
 
@@ -49,6 +43,13 @@ export function buildKnowledgeView(
   // MVP has a single cop, so all cop results belong to it.
   if (me.role === 'cop') view.investigations = state.copResults
 
-  // doctor & villager get no private knowledge.
+  // Eliminated players become spectators: they may watch passively and see every
+  // role. Living players never get this — the firewall only opens once you're out.
+  if (!me.alive) {
+    view.spectator = true
+    view.roles = Object.fromEntries(state.players.map((p) => [p.id, p.role]))
+  }
+
+  // doctor & villager (alive) get no private knowledge.
   return view
 }

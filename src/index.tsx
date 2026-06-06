@@ -97,6 +97,8 @@ async function runAuto(s: ReturnType<typeof setup>) {
   const agents = s.aiAgents // setup gave every seat an agent in --auto
   const nameOf = (id: string) =>
     s.initialState.players.find((p) => p.id === id)?.name ?? id
+  const roleOf = (id: string) =>
+    s.initialState.players.find((p) => p.id === id)?.role ?? '?'
   for await (const ev of runGame(s.initialState, { agents, rng: s.rng })) {
     switch (ev.kind) {
       case 'phaseStart':
@@ -111,7 +113,7 @@ async function runAuto(s: ReturnType<typeof setup>) {
         )
         break
       case 'death':
-        console.log(`💀 ${ev.name} (${ev.role}) ${ev.cause}`)
+        console.log(`💀 ${ev.name} (${roleOf(ev.victim)}) ${ev.cause}`)
         break
       case 'noDeath':
         console.log('…no one died.')

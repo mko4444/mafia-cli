@@ -90,6 +90,7 @@ export function useNetworkGame(url: string, name: string): NetGame {
           const ctx = {
             humanId: v?.you.id ?? ('' as PlayerId),
             humanIsMafia: v?.you.faction === 'mafia',
+            spectator: !!v?.spectator,
             nameOf: (id: PlayerId) =>
               v?.alivePlayers.find((p) => p.id === id)?.name ??
               v?.deadPlayers.find((p) => p.id === id)?.name ??

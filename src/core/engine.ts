@@ -123,14 +123,12 @@ export async function* runGame(
         round: state.round,
         victim: outcome.victim,
         cause: 'kill',
-        revealedRole: outcome.role!,
       })
       yield {
         kind: 'death',
         victim: outcome.victim,
         name: byId(state, outcome.victim)!.name,
         cause: 'kill',
-        role: outcome.role!,
       }
     } else {
       append(state, { type: 'saved', round: state.round })
@@ -185,14 +183,12 @@ export async function* runGame(
         round: state.round,
         victim: vo.lynched,
         cause: 'lynch',
-        revealedRole: vo.role!,
       })
       yield {
         kind: 'death',
         victim: vo.lynched,
         name: byId(state, vo.lynched)!.name,
         cause: 'lynch',
-        role: vo.role!,
       }
     } else {
       yield { kind: 'noDeath', round: state.round }

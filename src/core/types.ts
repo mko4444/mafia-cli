@@ -21,7 +21,7 @@ export type GameLogEvent =
   | { type: 'phase'; round: number; phase: Phase }
   | { type: 'statement'; round: number; speaker: PlayerId; text: string }
   | { type: 'vote'; round: number; voter: PlayerId; target: PlayerId | 'abstain' }
-  | { type: 'death'; round: number; victim: PlayerId; cause: 'kill' | 'lynch'; revealedRole: Role }
+  | { type: 'death'; round: number; victim: PlayerId; cause: 'kill' | 'lynch' } // role stays hidden until game over
   | { type: 'saved'; round: number } // doctor blocked the kill ("no one died")
 
 export interface MafiaChannelMsg {
@@ -52,21 +52,21 @@ export interface PublicPlayer {
   id: PlayerId
   name: string
 }
-export interface DeadPlayer extends PublicPlayer {
-  revealedRole: Role
-}
 
 export interface KnowledgeView {
   you: { id: PlayerId; name: string; role: Role; faction: Faction }
   phase: Phase
   round: number
   alivePlayers: PublicPlayer[]
-  deadPlayers: DeadPlayer[]
+  deadPlayers: PublicPlayer[] // names only — roles stay hidden until game over
   publicLog: GameLogEvent[]
   // private knowledge, present ONLY when legitimately known:
   mafiaTeammates?: PublicPlayer[] // mafia only
   mafiaChannel?: MafiaChannelMsg[] // mafia only, during night
   investigations?: CopResult[] // cop only
+  // spectator: an eliminated player sees everyone's role and may watch passively.
+  spectator?: boolean
+  roles?: Record<PlayerId, Role>
 }
 
 // ── Structured agent decision: hidden reasoning + public action ──
@@ -92,7 +92,7 @@ export type GameEvent =
       channel: 'day' | 'mafia'
     }
   | { kind: 'voteCast'; voter: PlayerId; voterName: string; target: PlayerId | 'abstain' }
-  | { kind: 'death'; victim: PlayerId; name: string; cause: 'kill' | 'lynch'; role: Role }
+  | { kind: 'death'; victim: PlayerId; name: string; cause: 'kill' | 'lynch' } // role hidden until reveal
   | { kind: 'noDeath'; round: number }
   | { kind: 'gameOver'; winner: Faction; reveal: ReasoningEntry[] }
 

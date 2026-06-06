@@ -46,8 +46,12 @@ export function GameView({ g, humanId }: { g: GameVM; humanId?: PlayerId }) {
               {phaseLabel} {g.myView.round}
             </Text>
             {g.thinking && <Text dimColor>💭 {g.thinking} is thinking…</Text>}
-            {g.myView.phase === 'night' && !g.pending && !g.thinking && (
-              <Text dimColor>🌙 The town sleeps while the Mafia move…</Text>
+            {g.myView.spectator ? (
+              <Text color="magenta">👻 You're out — watching. You can see every role now.</Text>
+            ) : (
+              g.myView.phase === 'night' &&
+              !g.pending &&
+              !g.thinking && <Text dimColor>🌙 The town sleeps while the Mafia move…</Text>
             )}
             {g.pending && <Prompt pending={g.pending} onSubmit={g.submit} />}
           </Box>

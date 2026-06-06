@@ -198,10 +198,15 @@ class Hub implements RemoteTransport {
     const mafiaOnly = ev.kind === 'statement' && ev.channel === 'mafia'
     this.backlog.push({ ev, mafiaOnly })
     for (const [seatId, ws] of this.seatSocket) {
-      if (mafiaOnly && !this.mafiaSeats.has(seatId)) continue
+      // Mafia chatter goes to mafia seats and to eliminated spectators only.
+      if (mafiaOnly && !this.mafiaSeats.has(seatId) && !this.isDead(seatId)) continue
       if (isOpen(ws)) send(ws, { t: 'event', ev })
     }
     return paceFor(ev)
+  }
+
+  private isDead(seatId: PlayerId): boolean {
+    return this.state.players.find((p) => p.id === seatId)?.alive === false
   }
 
   private sendView(seatId: PlayerId) {
@@ -217,9 +222,9 @@ class Hub implements RemoteTransport {
     this.seatSocket.set(c.seatId, ws)
     send(ws, { t: 'started', you: c.seatId, name: c.name, token: c.token })
     this.sendView(c.seatId)
-    const isMafia = this.mafiaSeats.has(c.seatId)
+    const seesMafia = this.mafiaSeats.has(c.seatId) || this.isDead(c.seatId)
     for (const b of this.backlog) {
-      if (b.mafiaOnly && !isMafia) continue
+      if (b.mafiaOnly && !seesMafia) continue
       send(ws, { t: 'event', ev: b.ev })
     }
   }

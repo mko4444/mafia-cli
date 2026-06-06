@@ -72,7 +72,7 @@ export function buildSystemPrompt(role: Role, persona: Persona): string {
     '',
     NEGOTIATION,
     '',
-    'Voice: stay in character. Speak like a real person at the table — react to what specific people just said (name them), call out contradictions, push your agenda. 2–4 natural sentences; be vivid, not generic. When you vote, argue for it out loud.',
+    "Voice: talk like a real person in a group chat, NOT an AI. Keep it SHORT — usually one sentence, two max. Casual and direct: contractions, fragments, lowercase are fine. React to what someone just said and name them. No preamble, no hedging ('I think it's worth noting…'), no recapping the game state, no bullet points, no over-explaining. Pick a side and say it plainly. When you vote, one line on who and why.",
     'Your `reasoning` is private and never shown to anyone — think honestly there, even when you intend to lie in public.',
     'Keep `notes` as your private running game plan and rewrite it each turn so your story stays consistent across the game.',
   ].join('\n')
@@ -98,7 +98,7 @@ function renderLog(v: KnowledgeView, nm: Map<PlayerId, string>): string {
       case 'vote':
         return `${nameOf(e.voter)} voted ${e.target === 'abstain' ? 'to abstain' : nameOf(e.target)}`
       case 'death':
-        return `${nameOf(e.victim)} died (${e.cause}) — was ${e.revealedRole}`
+        return `${nameOf(e.victim)} died (${e.cause})` // role stays hidden until game over
       case 'saved':
         return `No one died that night (the Doctor saved them).`
     }
@@ -152,7 +152,7 @@ export function buildUserPrompt(v: KnowledgeView, ask: Ask, memory = ''): string
   )
   if (v.deadPlayers.length) {
     out.push(
-      `Dead: ${v.deadPlayers.map((p) => `${p.name}(${p.id}) was ${p.revealedRole}`).join(', ')}`,
+      `Dead (roles still unknown): ${v.deadPlayers.map((p) => `${p.name}(${p.id})`).join(', ')}`,
     )
   }
   if (v.mafiaTeammates) {

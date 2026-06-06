@@ -57,6 +57,7 @@ export function useGameEngine(props: EngineProps): GameVM {
   const idRef = useRef(0)
   const resolverRef = useRef<((d: AgentDecision) => void) | null>(null)
   const cancelledRef = useRef(false)
+  const spectatorRef = useRef(false) // true once the human is eliminated
   const humanIsMafia = factionOf(humanRole) === 'mafia'
 
   const nameOf = useMemo(() => {
@@ -95,11 +96,17 @@ export function useGameEngine(props: EngineProps): GameVM {
         if (cancelledRef.current) return
         if (ev.kind === 'state') {
           const v = buildKnowledgeView(ev.state, humanId)
+          spectatorRef.current = !!v.spectator
           setMyView(v)
           setRoster(rosterFromView(v))
           continue
         }
-        const t = translate(ev, { humanId, humanIsMafia, nameOf })
+        const t = translate(ev, {
+          humanId,
+          humanIsMafia,
+          spectator: spectatorRef.current,
+          nameOf,
+        })
         push(t.feed)
         if (t.thinking !== undefined) setThinking(t.thinking)
         if (t.over) {

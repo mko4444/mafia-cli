@@ -55,6 +55,7 @@ export type FeedEvent = Exclude<GameEvent, { kind: 'state' }>
 export interface FeedCtx {
   humanId: PlayerId
   humanIsMafia: boolean
+  spectator: boolean // eliminated viewer — may watch the secret mafia channel too
   nameOf: (id: PlayerId) => string
 }
 
@@ -68,9 +69,11 @@ export interface Translated {
 const trim = (s: string) => (s.length > 200 ? s.slice(0, 197) + '…' : s)
 
 export function rosterFromView(v: KnowledgeView): RosterEntry[] {
+  // Roles are present only for spectators (eliminated players) and at game over.
+  const roleOf = (id: PlayerId) => v.roles?.[id]
   return [
-    ...v.alivePlayers.map((p) => ({ id: p.id, name: p.name, alive: true })),
-    ...v.deadPlayers.map((p) => ({ id: p.id, name: p.name, alive: false, role: p.revealedRole })),
+    ...v.alivePlayers.map((p) => ({ id: p.id, name: p.name, alive: true, role: roleOf(p.id) })),
+    ...v.deadPlayers.map((p) => ({ id: p.id, name: p.name, alive: false, role: roleOf(p.id) })),
   ].sort((a, b) => a.id.localeCompare(b.id))
 }
 
@@ -91,8 +94,8 @@ export function translate(ev: FeedEvent, ctx: FeedCtx): Translated {
       return { feed: [], thinking: ev.name, paceMs: PACING.thinkMs }
     case 'statement':
       if (ev.channel === 'mafia') {
-        // Town never sees the mafia channel (the server also gates this server-side).
-        if (!ctx.humanIsMafia) return { feed: [], thinking: null, paceMs: 0 }
+        // Living town never sees the mafia channel; mafia and spectators do.
+        if (!ctx.humanIsMafia && !ctx.spectator) return { feed: [], thinking: null, paceMs: 0 }
         return {
           feed: [{ kind: 'mafia', speaker: ev.name, text: ev.text }],
           thinking: null,
@@ -113,7 +116,8 @@ export function translate(ev: FeedEvent, ctx: FeedCtx): Translated {
         feed: [
           {
             kind: 'death',
-            text: `💀 ${ev.name} was ${ev.cause === 'lynch' ? 'lynched' : 'killed in the night'} — they were the ${ev.role}.`,
+            // Role stays hidden until the end-of-game reveal.
+            text: `💀 ${ev.name} was ${ev.cause === 'lynch' ? 'lynched' : 'killed in the night'}.`,
           },
         ],
         thinking: null,

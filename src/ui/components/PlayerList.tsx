@@ -22,11 +22,13 @@ export function PlayerList({
       <Text bold underline>
         Players
       </Text>
+      {myView.spectator && <Text color="magenta">👻 spectating (you're out)</Text>}
       {roster.map((p) => (
         <Text key={p.id} color={p.alive ? undefined : 'gray'}>
           {p.alive ? '● ' : '✝ '}
           {p.id === humanId ? <Text bold>{p.name} (you)</Text> : p.name}
-          {!p.alive && p.role && <Text dimColor> — {p.role}</Text>}
+          {/* role shows only when revealed: for spectators, and for the dead at game over */}
+          {p.role && <Text dimColor> — {p.role}</Text>}
         </Text>
       ))}
 
