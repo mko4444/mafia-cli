@@ -1,0 +1,46 @@
+{
+  "name": "mafia-cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Terminal game of Mafia played against Claude AI agents",
+  "packageManager": "pnpm@9.15.9",
+  "engines": { "node": ">=22" },
+  "bin": { "mafia": "dist/index.js" },
+  "files": ["dist"],
+  "scripts": {
+    "dev": "tsx src/index.tsx",
+    "start": "tsx src/index.tsx",
+    "build": "tsup",
+    "prepare": "tsup",
+    "test": "vitest run",
+    "lint": "eslint . --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.102.0",
+    "dotenv": "^17.0.0",
+    "ink": "^6.0.0",
+    "ink-select-input": "^6.0.0",
+    "ink-text-input": "^6.0.0",
+    "react": "^19.0.0",
+    "ws": "^8.18.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/ws": "^8.5.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.0.0",
+    "prettier": "^3.4.0",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.0.0",
+    "vite-tsconfig-paths": "^5.1.0",
+    "vitest": "^2.1.0"
+  }
+}
