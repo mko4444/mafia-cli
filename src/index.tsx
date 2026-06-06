@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import { spawn } from 'node:child_process'
 import os from 'node:os'
 import { render } from 'ink'
 import { makeAiAgent } from '~/agents/aiAgent'
@@ -135,6 +136,27 @@ const lanAddress = (port: number) => {
   return `ws://localhost:${port}`
 }
 
+// Best-effort copy to the OS clipboard; returns false if no tool is available.
+function copyToClipboard(text: string): boolean {
+  const tools =
+    process.platform === 'darwin'
+      ? [['pbcopy']]
+      : process.platform === 'win32'
+        ? [['clip']]
+        : [['wl-copy'], ['xclip', '-selection', 'clipboard'], ['xsel', '--clipboard', '--input']]
+  for (const [cmd, ...args] of tools) {
+    try {
+      const p = spawn(cmd, args, { stdio: ['pipe', 'ignore', 'ignore'] })
+      p.on('error', () => {})
+      p.stdin.end(text)
+      return true
+    } catch {
+      // try the next tool
+    }
+  }
+  return false
+}
+
 // Host = run the server AND play locally via a loopback connection, so it's one
 // command. Friends join the printed URL; empty seats fill with bots.
 async function runHost(opts: Opts) {
@@ -150,8 +172,11 @@ async function runHost(opts: Opts) {
           'Install: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/',
       )
   }
+  const joinCmd = `npx github:mko4444/mafia-cli join ${share}`
+  const copied = copyToClipboard(joinCmd)
   console.log(`\nMafia server on :${opts.port}`)
-  console.log(`Share with friends:  mafia join ${share}\n`)
+  console.log(`Share this command with friends${copied ? ' (copied to clipboard)' : ''}:`)
+  console.log(`  ${joinCmd}\n`)
   await runClient(`ws://localhost:${opts.port}`, opts.name)
   wss.close()
 }
